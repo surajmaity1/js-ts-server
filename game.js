@@ -2,58 +2,87 @@ export default class Game {
   constructor(rows, cols) {
     this.rows = rows;
     this.cols = cols;
+    this.grid = Array.from({ length: rows }, () => Array(cols).fill("_"));
+    this.players = [];
+    this.step = 0;
+    this.winningPosition = {
+      x: Math.floor(Math.random() * rows),
+      y: Math.floor(Math.random() * cols),
+    };
+    this.grid[this.winningPosition.x][this.winningPosition.y] = "$";
   }
 
   static create(rows, cols) {
-    Game.createGrid(rows, cols);
-    Game.getWinCoordinate(rows - 1, cols - 1);
-
     return new Game(rows, cols);
   }
 
   addPlayer(player) {
-    Game.placePlayer(this.rows - 1, this.cols - 1);
+    player.placePlayer(this.rows, this.cols, this.grid);
+    this.players.push(player);
+    this.grid[player.xCoordinate][player.yCoordinate] = player.id;
   }
 
-  start() {}
+  start() {
+    this.interval = setInterval(() => this.nextStep(), 1000);
+  }
 
-  static createGrid(rows, cols) {
-    let grid = [];
+  nextStep() {
+    this.step++;
 
-    for (let i = 0; i < rows; i++) {
-      grid[i] = [];
-      for (let j = 0; j < cols; j++) {
-        grid[i][j] = 0;
+    console.log(`Game Step ${this.step}:\n`);
+    this.players.forEach((player) =>
+      player.nextMove(this.grid, this.winningPosition, this.rows, this.cols)
+    );
+    if (this.checkCollision()) {
+      clearInterval(this.interval);
+    }
+
+    this.displayGrid();
+
+    if (this.checkWin()) {
+      clearInterval(this.interval);
+    }
+  }
+
+  checkCollision() {
+    const positions = new Map();
+
+    this.players.forEach((player) => {
+      const position = `${player.xCoordinate},${player.yCoordinate}`;
+      if (!positions.has(position)) {
+        positions.set(position, []);
       }
-    }
+      positions.get(position).push(player);
+    });
+
+    positions.forEach((players) => {
+      if (players.length > 1) {
+        players.forEach((player) => {
+          this.grid[player.xCoordinate][player.yCoordinate] = "#";
+          console.log("--- COLLISION OCCURRED ---");
+          clearInterval(this.interval);
+          return true;
+        });
+      }
+    });
+    return false;
   }
 
-  static getWinCoordinate(rows, cols) {
-    const [x, y] = Game.generateRandomNumbers(rows, cols);
-
-    console.log(`Winning Coordinate: (${x}, ${y})`);
+  displayGrid() {
+    this.grid.forEach((row) => console.log(row.join(" ")));
+    console.log("\n");
   }
 
-  static placePlayer(rows, cols) {
-    const [x, y] = Game.generateRandomNumbers(rows, cols);
-    console.log(`Player placed at: (${x}, ${y})`);
-  }
-
-  static generateRandomNumbers(rows, cols) {
-    let minX = rows / 2;
-    let minY = cols / 2;
-
-    if (minX === 0) {
-      minX = 1;
+  checkWin() {
+    for (let player of this.players) {
+      if (
+        player.xCoordinate === this.winningPosition.x &&
+        player.yCoordinate === this.winningPosition.y
+      ) {
+        console.log(`Player ${player.id} wins the Game`);
+        return true;
+      }
+      return false;
     }
-
-    if (minY === 0) {
-      minY = 1;
-    }
-
-    const x = Math.floor(Math.random() * (rows - minX + 1) + minX);
-    const y = Math.floor(Math.random() * (cols - minY + 1) + minY);
-
-    return [x, y];
   }
 }
