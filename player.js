@@ -5,6 +5,7 @@ export default class Player {
     this.id = String.fromCharCode(65 + playerIdGenerator++);
     this.xCoordinate = 0;
     this.yCoordinate = 0;
+    this.isCollitionOccurred = false;
   }
 
   static create() {
@@ -23,7 +24,11 @@ export default class Player {
     this.yCoordinate = y;
   }
 
-  nextMove(grid, winningPosition, rows, cols) {
+  nextMove(grid, winningPosition) {
+    if (this.isCollitionOccurred) {
+      return;
+    }
+
     grid[this.xCoordinate][this.yCoordinate] = "_";
 
     //console.log(`before coordinate ${this.xCoordinate},${this.yCoordinate}`);
