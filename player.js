@@ -23,9 +23,9 @@ export default class Player {
     this.xCoordinate = x;
     this.yCoordinate = y;
 
-    console.log(
-      `Player[${this.id}] placed at [${this.xCoordinate},${this.yCoordinate}]`
-    );
+    // console.log(
+    //   `Player [${this.id}] added at (${this.xCoordinate},${this.yCoordinate}).`
+    // );
   }
 
   nextMove(grid, winningPosition) {
@@ -43,8 +43,6 @@ export default class Player {
       grid[this.xCoordinate][this.yCoordinate] = "_";
     }
 
-    //console.log(`before coordinate ${this.xCoordinate},${this.yCoordinate}`);
-
     const dx = winningPosition.x - this.xCoordinate;
     const dy = winningPosition.y - this.yCoordinate;
 
@@ -54,11 +52,10 @@ export default class Player {
       this.yCoordinate += Math.sign(dy);
     }
 
-    //console.log(`after coordinate ${this.xCoordinate},${this.yCoordinate}`);
     //console.log("____________");
     grid[this.xCoordinate][this.yCoordinate] = this.id;
-    console.log(
-      `In next move, player[${this.id}] moved at [${this.xCoordinate},${this.yCoordinate}]`
-    );
+    // console.log(
+    //   `In next move, player[${this.id}] moved at [${this.xCoordinate},${this.yCoordinate}]`
+    // );
   }
 }

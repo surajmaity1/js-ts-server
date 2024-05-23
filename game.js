@@ -26,28 +26,39 @@ export default class Game {
   }
 
   start() {
-    console.log(`\nGame[${this.gameId}]:\n`);
-    this.displayGrid();
+    //console.log(`\nGame[${this.gameId}]:\n`);
+    //this.displayGrid();
+    // console.log(
+    //   `Game ${String(this.gameId).padStart(3, "0")} winning coordinate (${
+    //     this.winningPosition.x
+    //   },${this.winningPosition.y})\n`
+    // );
     this.playNextStep();
   }
 
   playNextStep() {
     this.step++;
 
-    console.log(`Game[${this.gameId}] Step ${this.step}:\n`);
-
     console.log(
-      `Winning loc: [${this.winningPosition.x},${this.winningPosition.y}]`
+      `Game ${String(this.gameId).padStart(3, "0")} Turn ${String(
+        this.step
+      ).padStart(3, "0")}:\n`
     );
+
+    // console.log(
+    //   `Winning loc: [${this.winningPosition.x},${this.winningPosition.y}]`
+    // );
     this.players.forEach((player) => {
       player.nextMove(this.grid, this.winningPosition);
     });
 
     if (this.checkWin()) {
+      console.log(`Game ${String(this.gameId).padStart(3, "0")} Over!\n`);
       return;
     }
 
     if (this.checkCollision()) {
+      console.log(`Game ${String(this.gameId).padStart(3, "0")} Over!\n`);
       return;
     }
 
@@ -55,12 +66,13 @@ export default class Game {
 
     setTimeout(() => {
       this.playNextStep();
-    }, "1000");
+    }, "5000");
   }
 
   checkCollision() {
     const positions = new Map();
     let collisionDetected = false;
+    let [firstPlayer, secondPlayer] = ["", ""];
 
     this.players.forEach((player) => {
       if (player.isCollitionOccurred) {
@@ -79,7 +91,7 @@ export default class Game {
     positions.forEach((players) => {
       if (players.length > 1) {
         if (!collisionDetected) {
-          console.log(`#--- COLLISION OCCURRED AT GAME[${this.gameId}]---#\n`);
+          console.log(`Collision Detected!\n`);
           collisionDetected = true;
         }
 
@@ -123,7 +135,10 @@ export default class Game {
     if (onlyOnePlayerWinCheck == 1) {
       this.displayGrid();
       console.log(
-        `Player ${winPlayerId} wins the Game[${this.gameId}] at position (${this.winningPosition.x}, ${this.winningPosition.y})\n`
+        `Player ${winPlayerId} wins the Game ${String(this.gameId).padStart(
+          3,
+          "0"
+        )} at position (${this.winningPosition.x}, ${this.winningPosition.y})\n`
       );
       return true;
     }
