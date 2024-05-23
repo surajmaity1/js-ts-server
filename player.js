@@ -22,14 +22,26 @@ export default class Player {
 
     this.xCoordinate = x;
     this.yCoordinate = y;
+
+    console.log(
+      `Player[${this.id}] placed at [${this.xCoordinate},${this.yCoordinate}]`
+    );
   }
 
   nextMove(grid, winningPosition) {
     if (this.isCollitionOccurred) {
       return;
     }
+    if (
+      this.xCoordinate === winningPosition.x &&
+      this.yCoordinate === winningPosition.y
+    ) {
+      return;
+    }
 
-    grid[this.xCoordinate][this.yCoordinate] = "_";
+    if (grid[this.xCoordinate][this.yCoordinate] === this.id) {
+      grid[this.xCoordinate][this.yCoordinate] = "_";
+    }
 
     //console.log(`before coordinate ${this.xCoordinate},${this.yCoordinate}`);
 
@@ -45,5 +57,8 @@ export default class Player {
     //console.log(`after coordinate ${this.xCoordinate},${this.yCoordinate}`);
     //console.log("____________");
     grid[this.xCoordinate][this.yCoordinate] = this.id;
+    console.log(
+      `In next move, player[${this.id}] moved at [${this.xCoordinate},${this.yCoordinate}]`
+    );
   }
 }

@@ -2,7 +2,7 @@ let gameIdGenerator = 1;
 
 export default class Game {
   constructor(rows, cols) {
-    this.id = gameIdGenerator++;
+    this.gameId = gameIdGenerator++;
     this.rows = rows;
     this.cols = cols;
     this.grid = Array.from({ length: rows }, () => Array(cols).fill("_"));
@@ -12,7 +12,7 @@ export default class Game {
       x: Math.floor(Math.random() * rows),
       y: Math.floor(Math.random() * cols),
     };
-    this.grid[this.winningPosition.x][this.winningPosition.y] = "$";
+    this.grid[this.winningPosition.x][this.winningPosition.y] = "X";
   }
 
   static create(rows, cols) {
@@ -26,28 +26,36 @@ export default class Game {
   }
 
   start() {
-    this.interval = setInterval(() => this.playNextStep(), 1000);
+    console.log(`\nGame[${this.gameId}]:\n`);
+    this.displayGrid();
+    this.playNextStep();
   }
 
   playNextStep() {
     this.step++;
 
-    console.log(`Game[${this.id}] Step ${this.step}:\n`);
+    console.log(`Game[${this.gameId}] Step ${this.step}:\n`);
 
-    this.players.forEach((player) =>
-      player.nextMove(this.grid, this.winningPosition)
+    console.log(
+      `Winning loc: [${this.winningPosition.x},${this.winningPosition.y}]`
     );
+    this.players.forEach((player) => {
+      player.nextMove(this.grid, this.winningPosition);
+    });
+
+    if (this.checkWin()) {
+      return;
+    }
 
     if (this.checkCollision()) {
-      clearInterval(this.interval);
       return;
     }
 
     this.displayGrid();
 
-    if (this.checkWin()) {
-      clearInterval(this.interval);
-    }
+    setTimeout(() => {
+      this.playNextStep();
+    }, "1000");
   }
 
   checkCollision() {
@@ -56,7 +64,7 @@ export default class Game {
 
     this.players.forEach((player) => {
       if (player.isCollitionOccurred) {
-        return;
+        return true;
       }
 
       const position = `${player.xCoordinate},${player.yCoordinate}`;
@@ -71,13 +79,13 @@ export default class Game {
     positions.forEach((players) => {
       if (players.length > 1) {
         if (!collisionDetected) {
-          console.log(`#--- COLLISION OCCURRED AT GAME[${this.id}]---#\n`);
+          console.log(`#--- COLLISION OCCURRED AT GAME[${this.gameId}]---#\n`);
           collisionDetected = true;
         }
 
         players.forEach((player) => {
           player.isCollitionOccurred = true;
-          this.grid[player.xCoordinate][player.yCoordinate] = "_"; // Remove player from grid
+          //this.grid[player.xCoordinate][player.yCoordinate] = "_"; // Remove player from grid
         });
       }
     });
@@ -99,17 +107,27 @@ export default class Game {
   }
 
   checkWin() {
+    let onlyOnePlayerWinCheck = 0;
+    let winPlayerId = "";
+
     for (let player of this.players) {
       if (
         player.xCoordinate === this.winningPosition.x &&
         player.yCoordinate === this.winningPosition.y
       ) {
-        console.log(
-          `Player ${player.id} wins the Game[${this.id}] at position (${this.winningPosition.x}, ${this.winningPosition.y})\n`
-        );
-        return true;
+        onlyOnePlayerWinCheck++;
+        winPlayerId = player.id;
       }
-      return false;
     }
+
+    if (onlyOnePlayerWinCheck == 1) {
+      this.displayGrid();
+      console.log(
+        `Player ${winPlayerId} wins the Game[${this.gameId}] at position (${this.winningPosition.x}, ${this.winningPosition.y})\n`
+      );
+      return true;
+    }
+
+    return false;
   }
 }
