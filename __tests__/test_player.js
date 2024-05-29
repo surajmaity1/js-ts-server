@@ -15,10 +15,10 @@ describe("Player", () => {
     expect(Player.nextPlayerName).toBe("B");
   });
 
-  test("should reset the next player name after Z", () => {
+  test("should update the next player name correctly after Z", () => {
     Player.nextPlayerName = "Z";
     Player.create();
-    expect(Player.nextPlayerName).toBe("A");
+    expect(Player.nextPlayerName).toBe("AA");
   });
 
   test("should set the player position correctly", () => {
@@ -39,7 +39,7 @@ describe("Player", () => {
     const player = Player.create();
     player.setPosition(7, 7);
     const nextPosition = player.nextPosition([7, 7], 10, 10);
-    expect(nextPosition).toEqual([6, 7]);
+    expect(nextPosition).toEqual([7, 7]);
   });
 
   test("should not move outside the boundaries", () => {

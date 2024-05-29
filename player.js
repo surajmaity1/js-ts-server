@@ -1,59 +1,77 @@
 let playerIdGenerator = 0;
 
 export default class Player {
+  static nextPlayerName = "A";
+
   constructor() {
-    this.id = String.fromCharCode(65 + playerIdGenerator++);
-    this.xCoordinate = 0;
-    this.yCoordinate = 0;
+    this.name = Player.generateNextPlayerName();
+    this.x = 0;
+    this.y = 0;
     this.isCollitionOccurred = false;
   }
 
   static create() {
     return new Player();
   }
-
-  placePlayer(rows, cols, grid) {
-    let x, y;
-
-    do {
-      x = Math.floor(Math.random() * rows);
-      y = Math.floor(Math.random() * cols);
-    } while (grid[x][y] !== "_");
-
-    this.xCoordinate = x;
-    this.yCoordinate = y;
-
-    // console.log(
-    //   `Player [${this.id}] added at (${this.xCoordinate},${this.yCoordinate}).`
-    // );
+  static generateNextPlayerName() {
+    let name = Player.nextPlayerName;
+    Player.nextPlayerName = Player.incrementName(name);
+    return name;
   }
 
-  nextMove(grid, winningPosition) {
-    if (this.isCollitionOccurred) {
-      return;
-    }
-    if (
-      this.xCoordinate === winningPosition.x &&
-      this.yCoordinate === winningPosition.y
-    ) {
-      return;
-    }
+  static incrementName(name) {
+    let carry = true;
+    let nameArray = name.split("").reverse();
 
-    if (grid[this.xCoordinate][this.yCoordinate] === this.id) {
-      grid[this.xCoordinate][this.yCoordinate] = "_";
-    }
-
-    const dx = winningPosition.x - this.xCoordinate;
-    const dy = winningPosition.y - this.yCoordinate;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-      this.xCoordinate += Math.sign(dx);
-    } else {
-      this.yCoordinate += Math.sign(dy);
+    for (let i = 0; i < nameArray.length; i++) {
+      if (carry) {
+        if (nameArray[i] === "Z") {
+          nameArray[i] = "A";
+        } else {
+          nameArray[i] = String.fromCharCode(nameArray[i].charCodeAt(0) + 1);
+          carry = false;
+        }
+      }
     }
 
-    //console.log("____________");
-    grid[this.xCoordinate][this.yCoordinate] = this.id;
+    if (carry) {
+      nameArray.push("A");
+    }
+
+    return nameArray.reverse().join("");
+  }
+
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+
+    // console.log(`Player [${this.name}] added at (${this.x},${this.y}).`);
+  }
+
+  nextPosition(winningPosition, rows, cols) {
+    const [targetX, targetY] = winningPosition;
+    let nextX = this.x;
+    let nextY = this.y;
+
+    // Move towards the target if not already at the target position
+    if (this.x < targetX) {
+      nextX = this.x + 1;
+    } else if (this.x > targetX) {
+      nextX = this.x - 1;
+    }
+
+    if (this.y < targetY) {
+      nextY = this.y + 1;
+    } else if (this.y > targetY) {
+      nextY = this.y - 1;
+    }
+
+    // Ensure the new position does not go out of bounds
+    nextX = Math.max(0, Math.min(nextX, rows - 1));
+    nextY = Math.max(0, Math.min(nextY, cols - 1));
+
+    // console.log("____________");
+    return [nextX, nextY];
     // console.log(
     //   `In next move, player[${this.id}] moved at [${this.xCoordinate},${this.yCoordinate}]`
     // );

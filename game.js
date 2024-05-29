@@ -1,18 +1,16 @@
-let gameIdGenerator = 1;
-
 export default class Game {
+  static gameId = 1;
   constructor(rows, cols) {
-    this.gameId = gameIdGenerator++;
+    this.id = Game.gameId++;
     this.rows = rows;
     this.cols = cols;
     this.grid = Array.from({ length: rows }, () => Array(cols).fill("_"));
     this.players = [];
     this.step = 0;
-    this.winningPosition = {
-      x: Math.floor(Math.random() * rows),
-      y: Math.floor(Math.random() * cols),
-    };
-    this.grid[this.winningPosition.x][this.winningPosition.y] = "X";
+    this.xPosition = [0, 0];
+    this.xPosition[0] = Math.floor(Math.random() * rows);
+    this.xPosition[1] = Math.floor(Math.random() * cols);
+    this.grid[this.xPosition[0]][this.xPosition[1]] = "X";
   }
 
   static create(rows, cols) {
@@ -20,9 +18,26 @@ export default class Game {
   }
 
   addPlayer(player) {
-    player.placePlayer(this.rows, this.cols, this.grid);
+    // if grid's rows and col's length less than 2, don't add players
+    if (this.rows < 2 && this.cols < 2) {
+      return;
+    }
+
+    // if game is full, don't add players
+    if (this.players.length >= this.rows + this.cols - 1) {
+      return;
+    }
+
+    let x, y;
+
+    do {
+      x = Math.floor(Math.random() * this.rows);
+      y = Math.floor(Math.random() * this.cols);
+    } while (this.grid[x][y] !== "_");
+
+    player.setPosition(x, y);
     this.players.push(player);
-    this.grid[player.xCoordinate][player.yCoordinate] = player.id;
+    this.grid[player.x][player.y] = player.name;
   }
 
   start() {
@@ -40,25 +55,42 @@ export default class Game {
     this.step++;
 
     console.log(
-      `Game ${String(this.gameId).padStart(3, "0")} Turn ${String(
+      `Game ${String(this.id).padStart(3, "0")} Turn ${String(
         this.step
       ).padStart(3, "0")}:\n`
     );
 
     // console.log(
-    //   `Winning loc: [${this.winningPosition.x},${this.winningPosition.y}]`
+    //   `Winning loc: [${this.xPosition[0]},${this.xPosition[1]}]`
     // );
     this.players.forEach((player) => {
-      player.nextMove(this.grid, this.winningPosition);
+      if (player.isCollitionOccurred) {
+        return;
+      }
+
+      if (player.x === this.xPosition[0] && player.y === this.xPosition[1]) {
+        return;
+      }
+      if (this.grid[player.x][player.y] === player.name) {
+        this.grid[player.x][player.y] = "_";
+      }
+
+      const [nextX, nextY] = player.nextPosition(
+        this.xPosition,
+        this.rows,
+        this.cols
+      );
+      player.setPosition(nextX, nextY);
+      this.grid[player.x][player.y] = player.name;
     });
 
-    if (this.checkWin()) {
-      console.log(`Game ${String(this.gameId).padStart(3, "0")} Over!\n`);
+    if (this.checkforWin()) {
+      console.log(`Game ${String(this.id).padStart(3, "0")} Over!\n`);
       return;
     }
 
-    if (this.checkCollision()) {
-      console.log(`Game ${String(this.gameId).padStart(3, "0")} Over!\n`);
+    if (this.checkforCollision()) {
+      console.log(`Game ${String(this.id).padStart(3, "0")} Over!\n`);
       return;
     }
 
@@ -69,7 +101,7 @@ export default class Game {
     }, "5000");
   }
 
-  checkCollision() {
+  checkforCollision() {
     const positions = new Map();
     let collisionDetected = false;
     let [firstPlayer, secondPlayer] = ["", ""];
@@ -79,7 +111,7 @@ export default class Game {
         return true;
       }
 
-      const position = `${player.xCoordinate},${player.yCoordinate}`;
+      const position = `${player.x},${player.y}`;
 
       if (!positions.has(position)) {
         positions.set(position, []);
@@ -118,27 +150,24 @@ export default class Game {
     console.log("\n");
   }
 
-  checkWin() {
+  checkforWin() {
     let onlyOnePlayerWinCheck = 0;
     let winPlayerId = "";
 
     for (let player of this.players) {
-      if (
-        player.xCoordinate === this.winningPosition.x &&
-        player.yCoordinate === this.winningPosition.y
-      ) {
+      if (player.x === this.xPosition[0] && player.y === this.xPosition[1]) {
         onlyOnePlayerWinCheck++;
-        winPlayerId = player.id;
+        winPlayerId = player.name;
       }
     }
 
     if (onlyOnePlayerWinCheck == 1) {
       this.displayGrid();
       console.log(
-        `Player ${winPlayerId} wins the Game ${String(this.gameId).padStart(
+        `Player ${winPlayerId} wins the Game ${String(this.id).padStart(
           3,
           "0"
-        )} at position (${this.winningPosition.x}, ${this.winningPosition.y})\n`
+        )} at position (${this.xPosition[0]}, ${this.xPosition[1]})\n`
       );
       return true;
     }
